@@ -1,4 +1,5 @@
 from collections import defaultdict
+import time
 from typing import List
 
 
@@ -226,3 +227,29 @@ class BankingSystem():
 # bank.deposit(20, "H505", 300)
 # bank.scheduled_payments(21, "H505", "A123", 100, "pending", 20)  # Succeeds
 # bank.scheduled_payments(22, "H505", "B456", 300, "pending", 21)  # Fails due to
+
+    def accept_transfer(self, timestamp: int, account_id: str, transfer_id: str) -> bool:
+        self.last_operation_time = timestamp
+        
+        if transfer_id not in self.transfers:
+            return False
+        transfers_account = [t for t in self.transfers if t[transfer_id] == transfer_id  and t[status] == 'pending']
+        now = time.time()
+        if len(transfers_account) == 0:
+            return False
+        for tranfers in transfers_account:
+            
+            if  now - tranfers['created_time'] - now < timedelta(hours=24): 
+                transfers['status'] = 'expired'
+            elif tranfers['transfer_id'] == transfer_id:
+                self.accounts[account_id]  += tranfers['withheld_amount']
+                self.transactions.append((account_id,tranfers['withheld_amount'],timestamp,'+'))
+                self.transactions.append((tranfers['source_account_id'],tranfers['withheld_amount'],timestamp,'-'))
+                return True
+                
+    
+        
+        return False
+
+
+
